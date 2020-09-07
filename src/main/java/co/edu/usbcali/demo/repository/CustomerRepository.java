@@ -13,5 +13,5 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
 	
 	@Query("SELECT cus FROM Customer cus WHERE cus.name LIKE 'Mar%'")
 	public List<Customer> findCustomerLikemar();
-
+	
 }
