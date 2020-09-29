@@ -31,7 +31,7 @@ public class Product implements java.io.Serializable {
 	
 	private Integer price;
 	
-	private List<ShoppingProduct> shoppingProducts = new ArrayList<ShoppingProduct>(0);
+	private List<ShoppingProduct> shoppingProducts = new ArrayList<>(0);
 
 	public Product() {
 	}
