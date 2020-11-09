@@ -23,70 +23,67 @@ import co.edu.usbcali.demo.mapper.CustomerMapper;
 import co.edu.usbcali.demo.service.CustomerService;
 
 @RestController
-@RequestMapping("/api/customer")
+@RequestMapping("/api/v1/customer")
 @CrossOrigin("*")
 public class CustomerController {
-	
-	//private final static Logger log=LoggerFactory.getLogger(CustomerController.class);
-	
+
 	@Autowired
 	CustomerService customerService;
-	
+
 	@Autowired
 	CustomerMapper customerMappper;
-	
-	
+
 	@PostMapping("/save")
-	public ResponseEntity<?> save(@Valid @RequestBody CustomerDTO customerDTO)throws Exception{
-		
-		Customer customer=customerMappper.toCustomer(customerDTO);
-		customer=customerService.save(customer);
-		customerDTO=customerMappper.toCustomerDTO(customer);
-		
-		return ResponseEntity.ok().body(customerDTO);			
-	
+	public ResponseEntity<?> save(@Valid @RequestBody CustomerDTO customerDTO) throws Exception {
+
+		Customer customer = customerMappper.toCustomer(customerDTO);
+		customer = customerService.save(customer);
+		customerDTO = customerMappper.toCustomerDTO(customer);
+
+		return ResponseEntity.ok().body(customerDTO);
+
 	}
-	
+
 	@PutMapping("/update")
-	public ResponseEntity<?> update(@Valid @RequestBody CustomerDTO customerDTO)throws Exception{
-		
-		Customer customer=customerMappper.toCustomer(customerDTO);
-		customer=customerService.update(customer);
-		customerDTO=customerMappper.toCustomerDTO(customer);
-		
-		return ResponseEntity.ok().body(customerDTO);			
-	
+	public ResponseEntity<?> update(@Valid @RequestBody CustomerDTO customerDTO) throws Exception {
+
+		Customer customer = customerMappper.toCustomer(customerDTO);
+		customer = customerService.update(customer);
+		customerDTO = customerMappper.toCustomerDTO(customer);
+
+		return ResponseEntity.ok().body(customerDTO);
+
 	}
-	
+
 	@DeleteMapping("/delete/{email}")
-	public ResponseEntity<?> delete(@PathVariable("email") String email) throws Exception{
-		
+	public ResponseEntity<?> delete(@PathVariable("email") String email) throws Exception {
+
 		customerService.deleteById(email);
-		
-		return ResponseEntity.ok().build();			
+
+		return ResponseEntity.ok().build();
 	}
-	
+
 	@GetMapping("/findAll")
-	public ResponseEntity<?> findAll()throws Exception{
-		
-		List<Customer> customers=customerService.findAll();
-		List<CustomerDTO> customerDTOs=customerMappper.toCustomersDTO(customers);
-		
+	public ResponseEntity<?> findAll() throws Exception {
+
+		List<Customer> customers = customerService.findAll();
+		List<CustomerDTO> customerDTOs = customerMappper.toCustomersDTO(customers);
+
 		return ResponseEntity.ok().body(customerDTOs);
 	}
-	
+
 	@GetMapping("/findById/{email}")
-	public ResponseEntity<?> findById(@PathVariable("email") String email) throws Exception{
-		
-		Optional<Customer> customerOptional=customerService.findById(email);
-		if(customerOptional.isPresent()==false) {
-			return ResponseEntity.ok().body(null);				
-		}		
-		
-		Customer customer=customerOptional.get();
-		//Paso la informacion del Entity a el DTO
-		CustomerDTO customerDTO=customerMappper.toCustomerDTO(customer);
-		
-		return ResponseEntity.ok().body(customerDTO);			
+	public ResponseEntity<?> findById(@PathVariable("email") String email) throws Exception {
+
+		Optional<Customer> customerOptional = customerService.findById(email);
+		if (customerOptional.isPresent() == false) {
+			return ResponseEntity.ok().body(null);
+		}
+
+		Customer customer = customerOptional.get();
+		// Paso la informacion del Entity a el DTO
+		CustomerDTO customerDTO = customerMappper.toCustomerDTO(customer);
+
+		return ResponseEntity.ok().body(customerDTO);
 	}
 }

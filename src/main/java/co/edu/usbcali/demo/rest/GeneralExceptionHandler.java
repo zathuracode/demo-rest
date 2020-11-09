@@ -25,8 +25,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
- * * Handle all exceptions and java bean validation errors
- * for all endpoints income data that use the @Valid annotation
+ * * Handle all exceptions and java bean validation errors for all endpoints
+ * income data that use the @Valid annotation
  *
  * @author Ehab Qadah
  */
@@ -48,50 +48,40 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
 	private static final String TYPE = "type";
 
 	@Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(
-			MethodArgumentNotValidException exception,
-			HttpHeaders headers,
-			HttpStatus status, WebRequest request) {
-		List<String> validationErrors = exception.getBindingResult()
-				.getFieldErrors()
-				.stream()
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception,
+			HttpHeaders headers, HttpStatus status, WebRequest request) {
+		List<String> validationErrors = exception.getBindingResult().getFieldErrors().stream()
 				.map(error -> error.getField() + FIELD_ERROR_SEPARATOR + error.getDefaultMessage())
 				.collect(Collectors.toList());
 		return getExceptionResponseEntity(exception, HttpStatus.BAD_REQUEST, request, validationErrors);
 	}
 
 	@Override
-	protected ResponseEntity<Object> handleHttpMessageNotReadable(
-			HttpMessageNotReadableException exception,
-			HttpHeaders headers, HttpStatus status,
-			WebRequest request) {
+	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException exception,
+			HttpHeaders headers, HttpStatus status, WebRequest request) {
 		return getExceptionResponseEntity(exception, status, request,
 				Collections.singletonList(exception.getLocalizedMessage()));
 	}
 
-	@ExceptionHandler({ConstraintViolationException.class})
-	public ResponseEntity<Object> handleConstraintViolation(
-			ConstraintViolationException exception, WebRequest request) {
-		final List<String> validationErrors = exception.getConstraintViolations().stream().
-				map(violation ->
-						violation.getPropertyPath() + FIELD_ERROR_SEPARATOR + violation.getMessage())
+	@ExceptionHandler({ ConstraintViolationException.class })
+	public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException exception,
+			WebRequest request) {
+		final List<String> validationErrors = exception.getConstraintViolations().stream()
+				.map(violation -> violation.getPropertyPath() + FIELD_ERROR_SEPARATOR + violation.getMessage())
 				.collect(Collectors.toList());
 		return getExceptionResponseEntity(exception, HttpStatus.BAD_REQUEST, request, validationErrors);
 	}
 
-
 	/**
 	 * A general handler for all uncaught exceptions
 	 */
-	@ExceptionHandler({Exception.class})
+	@ExceptionHandler({ Exception.class })
 	public ResponseEntity<Object> handleAllExceptions(Exception exception, WebRequest request) {
-		ResponseStatus responseStatus =
-				exception.getClass().getAnnotation(ResponseStatus.class);
-		final HttpStatus status =
-				responseStatus!=null ? responseStatus.value():HttpStatus.INTERNAL_SERVER_ERROR;
+		ResponseStatus responseStatus = exception.getClass().getAnnotation(ResponseStatus.class);
+		final HttpStatus status = responseStatus != null ? responseStatus.value() : HttpStatus.INTERNAL_SERVER_ERROR;
 		final String localizedMessage = exception.getLocalizedMessage();
 		final String path = request.getDescription(false);
-		String message = (StringUtils.isNotEmpty(localizedMessage) ? localizedMessage:status.getReasonPhrase());
+		String message = (StringUtils.isNotEmpty(localizedMessage) ? localizedMessage : status.getReasonPhrase());
 		logger.error(String.format(ERROR_MESSAGE_TEMPLATE, message, path), exception);
 		return getExceptionResponseEntity(exception, status, request, Collections.singletonList(message));
 	}
@@ -99,10 +89,8 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Build a detailed information about the exception in the response
 	 */
-	private ResponseEntity<Object> getExceptionResponseEntity(final Exception exception,
-	                                                          final HttpStatus status,
-	                                                          final WebRequest request,
-	                                                          final List<String> errors) {
+	private ResponseEntity<Object> getExceptionResponseEntity(final Exception exception, final HttpStatus status,
+			final WebRequest request, final List<String> errors) {
 		final Map<String, Object> body = new LinkedHashMap<>();
 		final String path = request.getDescription(false);
 		body.put(TIMESTAMP, Instant.now());
@@ -111,21 +99,21 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
 		body.put(TYPE, exception.getClass().getSimpleName());
 		body.put(PATH, path);
 		body.put(MESSAGE, getMessageForStatus(status));
-		final String errorsMessage = CollectionUtils.isNotEmpty(errors) ?
-				errors.stream().filter(StringUtils::isNotEmpty).collect(Collectors.joining(LIST_JOIN_DELIMITER))
-				:status.getReasonPhrase();
+		final String errorsMessage = CollectionUtils.isNotEmpty(errors)
+				? errors.stream().filter(StringUtils::isNotEmpty).collect(Collectors.joining(LIST_JOIN_DELIMITER))
+				: status.getReasonPhrase();
 		local_logger.error(ERRORS_FOR_PATH, errorsMessage, path);
 		return new ResponseEntity<>(body, status);
 	}
 
 	private String getMessageForStatus(HttpStatus status) {
 		switch (status) {
-			case UNAUTHORIZED:
-				return ACCESS_DENIED;
-			case BAD_REQUEST:
-				return INVALID_REQUEST;
-			default:
-				return status.getReasonPhrase();
+		case UNAUTHORIZED:
+			return ACCESS_DENIED;
+		case BAD_REQUEST:
+			return INVALID_REQUEST;
+		default:
+			return status.getReasonPhrase();
 		}
 	}
 }
