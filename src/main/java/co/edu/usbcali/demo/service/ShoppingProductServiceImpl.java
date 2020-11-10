@@ -136,4 +136,10 @@ public class ShoppingProductServiceImpl implements ShoppingProductService {
 
         return shoppingProductRepository.findById(shprId);
     }
+
+	@Override
+	@Transactional(readOnly = true)
+	public Long totalShoppingProductByShoppingCart(Integer carId) {	
+		return shoppingProductRepository.totalShoppingProductByShoppingCart(carId);
+	}
 }
