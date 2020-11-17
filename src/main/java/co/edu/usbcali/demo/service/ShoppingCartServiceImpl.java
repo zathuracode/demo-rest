@@ -142,4 +142,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 		return shoppingCartRepository.findById(carId);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ShoppingCart findByCustomerEmail(String email) throws Exception {
+
+		return null;
+	}
+
 }

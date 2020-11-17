@@ -59,10 +59,25 @@ class CartServiceTest {
 	}
 	
 	@Test
-	void debeAgregarProductShoppingCart()throws Exception {
+	void debeAgregarProductAPPL45ShoppingCart()throws Exception {
 		//Arrange
-		Integer carId=8;
+		Integer carId=9;
 		String proId="APPL45";
+		Integer quantity=5;
+		ShoppingProduct shoppingProduct=null;
+		
+		//Act
+		shoppingProduct=cartService.addProduct(carId, proId, quantity);
+		
+		//Assert
+		assertNotNull(shoppingProduct, "El shoppingProduct es nulo");
+	}
+	
+	@Test
+	void debeAgregarProductAPPL90ShoppingCart()throws Exception {
+		//Arrange
+		Integer carId=9;
+		String proId="APPL90";
 		Integer quantity=10;
 		ShoppingProduct shoppingProduct=null;
 		
@@ -71,6 +86,35 @@ class CartServiceTest {
 		
 		//Assert
 		assertNotNull(shoppingProduct, "El shoppingProduct es nulo");
+	}
+	
+	@Test
+	void debeRemoverProductAPPL45ShoppingCart()throws Exception {
+		//Arrange
+		Integer carId=9;
+		String proId="APPL45";
+		
+		//Act
+		cartService.removeProduct(carId, proId);
+	}
+	
+	@Test
+	void debeRemoverProductAPPL90ShoppingCart()throws Exception {
+		//Arrange
+		Integer carId=9;
+		String proId="APPL90";
+		
+		//Act
+		cartService.removeProduct(carId, proId);
+	}
+	
+	@Test
+	void debeLimpiarElCart() throws Exception{
+		//Arrange
+		Integer carId=9;
+		
+		//Act
+		cartService.clearCart(carId);
 	}
 	
 	

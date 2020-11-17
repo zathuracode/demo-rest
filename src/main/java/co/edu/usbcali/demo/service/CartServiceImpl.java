@@ -34,6 +34,7 @@ public class CartServiceImpl implements CartService {
 	@Transactional(readOnly = false,propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
 	public ShoppingCart createCart(String email) throws Exception {
 		Customer customer=null;
+		ShoppingCart shoppingCart=null;
 		
 		if(email==null || email.isBlank()==true) {
 			throw new Exception("El email del cliente es nulo");
@@ -50,7 +51,9 @@ public class CartServiceImpl implements CartService {
 			throw new Exception("El cliente con email: "+email+" no esta habilitado");
 		}
 		
-		ShoppingCart shoppingCart=new ShoppingCart(0, customer, null,0, 0L, "Y", null);
+		
+		
+		shoppingCart=new ShoppingCart(0, customer, null,0, 0L, "Y", null);
 		
 		shoppingCart=shoppingCartService.save(shoppingCart);
 		
@@ -65,6 +68,7 @@ public class CartServiceImpl implements CartService {
 		Product product=null;
 		Long totalShoppingProduct=0L;
 		Long totalShoppingCart=0L;
+		Integer quantityShoppingCart=0;
 		
 		if(carId==null || carId<=0) {
 			throw new Exception("El carId es nulo o menor a cero");
@@ -79,7 +83,7 @@ public class CartServiceImpl implements CartService {
 		}
 		
 		if(shoppingCartService.findById(carId).isPresent()==false) {
-			
+			throw new Exception("El shoppingCartService no existe");
 		}
 		
 		shoppingCart=shoppingCartService.findById(carId).get();
@@ -98,20 +102,33 @@ public class CartServiceImpl implements CartService {
 			throw new Exception("El product esta inhabilitado");
 		}
 		
-		ShoppingProduct shoppingProduct=new ShoppingProduct();
-		shoppingProduct.setProduct(product);
-		shoppingProduct.setQuantity(quantity);
-		shoppingProduct.setShoppingCart(shoppingCart);
-		shoppingProduct.setShprId(0);
-		totalShoppingProduct=Long.valueOf(product.getPrice()*quantity);
-		shoppingProduct.setTotal(totalShoppingProduct);
 		
-		shoppingProduct=shoppingProductService.save(shoppingProduct);
+		ShoppingProduct shoppingProduct=shoppingProductService.findByShoppingCartAndProduct(carId, proId);
+		if(shoppingProduct==null) {
+			shoppingProduct=new ShoppingProduct();
+			shoppingProduct.setProduct(product);
+			shoppingProduct.setQuantity(quantity);
+			shoppingProduct.setShoppingCart(shoppingCart);
+			shoppingProduct.setShprId(0);
+			totalShoppingProduct=Long.valueOf(product.getPrice()*quantity);
+			shoppingProduct.setTotal(totalShoppingProduct);
+			
+			shoppingProduct=shoppingProductService.save(shoppingProduct);
+		}else {
+			shoppingProduct.setQuantity(quantity);
+			totalShoppingProduct=Long.valueOf(product.getPrice()*quantity);
+			shoppingProduct.setTotal(totalShoppingProduct);
+			
+			shoppingProduct=shoppingProductService.update(shoppingProduct);
+		}
 		
 		totalShoppingCart=shoppingProductService.totalShoppingProductByShoppingCart(carId);
+		quantityShoppingCart=shoppingProductService.quantityShoppingProductByShoppingCart(carId);
 		
+		shoppingCart.setItems(quantityShoppingCart);
 		shoppingCart.setTotal(totalShoppingCart);
 		shoppingCartService.update(shoppingCart);
+		
 		
 		
 		return shoppingProduct;
@@ -120,22 +137,89 @@ public class CartServiceImpl implements CartService {
 	@Override
 	@Transactional(readOnly = false,propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
 	public void removeProduct(Integer carId, String proId) throws Exception {
-		// TODO Auto-generated method stub
+		ShoppingCart shoppingCart=null;
+		Product product=null;
+		Long totalShoppingProduct=0L;
+		Long totalShoppingCart=0L;
+		Integer quantityShoppingCart=0;
+		
+		if(carId==null || carId<=0) {
+			throw new Exception("El carId es nulo o menor a cero");
+		}
+		
+		if(proId==null || proId.isBlank()==true) {
+			throw new Exception("El proId es nulo o menor a esta en blanco");
+		}
+		
+		if(shoppingCartService.findById(carId).isPresent()==false) {
+			throw new Exception("El shoppingCart no existe");
+		}
+		
+		shoppingCart=shoppingCartService.findById(carId).get();
+		
+		if(shoppingCart.getEnable().equals("N")==true) {
+			throw new Exception("El shoppingCart esta inhabilitado");
+		}
+		
+		if(productService.findById(proId).isPresent()==false) {
+			throw new Exception("El product no existe");
+		}
+		
+		product=productService.findById(proId).get();
+		
+		if(product.getEnable().equals("N")==true) {
+			throw new Exception("El product esta inhabilitado");
+		}
+		
+		
+		ShoppingProduct shoppingProduct=shoppingProductService.findByShoppingCartAndProduct(carId, proId);
+		if(shoppingProduct==null) {
+			throw new Exception("El shoppingCart no tiene un product con id:"+proId);
+		}
+		
+		
+		shoppingProduct.setQuantity(shoppingProduct.getQuantity()-1);
+		totalShoppingProduct=Long.valueOf(product.getPrice()*shoppingProduct.getQuantity());
+		shoppingProduct.setTotal(totalShoppingProduct);
+		
+		shoppingProduct=shoppingProductService.update(shoppingProduct);
+		
+		
+		totalShoppingCart=shoppingProductService.totalShoppingProductByShoppingCart(carId);
+		quantityShoppingCart=shoppingProductService.quantityShoppingProductByShoppingCart(carId);
+		
+		shoppingCart.setItems(quantityShoppingCart);
+		shoppingCart.setTotal(totalShoppingCart);
+		shoppingCartService.update(shoppingCart);
 
 	}
 
 	@Override
 	@Transactional(readOnly = false,propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
 	public void clearCart(Integer carId) throws Exception {
-		// TODO Auto-generated method stub
-
+		ShoppingCart shoppingCart=null;
+		if(carId==null || carId<=0) {
+			throw new Exception("El carId es nulo o menor a cero");
+		}
+		
+		if(shoppingCartService.findById(carId).isPresent()==false) {
+			throw new Exception("El shoppingCart no existe");
+		}
+		
+		shoppingCart=shoppingCartService.findById(carId).get();
+		
+		shoppingCart.setItems(0);
+		shoppingCart.setTotal(0L);
+		shoppingCartService.update(shoppingCart);
+		
+		shoppingProductService.deleteProductsByShoppingCart(carId);
+		
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public List<ShoppingProduct> findShoppingProductByShoppingCart(Integer carId) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		return shoppingProductService.findShoppingProductByShoppingCart(carId);
 	}
 
 }

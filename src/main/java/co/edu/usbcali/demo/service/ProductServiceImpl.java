@@ -77,6 +77,8 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public void delete(Product entity) throws Exception {
+
+		
 		log.debug("deleting Product instance");
 
 		if (entity == null) {

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import co.edu.usbcali.demo.domain.ShoppingCart;
 import co.edu.usbcali.demo.domain.ShoppingProduct;
 import co.edu.usbcali.demo.repository.ShoppingProductRepository;
 
@@ -25,6 +26,10 @@ import co.edu.usbcali.demo.repository.ShoppingProductRepository;
 public class ShoppingProductServiceImpl implements ShoppingProductService {
 	
 	private final static Logger log = LoggerFactory.getLogger(ShoppingProductServiceImpl.class);
+	
+	
+	@Autowired
+	private ShoppingCartService shoppingCartService;
 	
     @Autowired
     private ShoppingProductRepository shoppingProductRepository;
@@ -141,5 +146,42 @@ public class ShoppingProductServiceImpl implements ShoppingProductService {
 	@Transactional(readOnly = true)
 	public Long totalShoppingProductByShoppingCart(Integer carId) {	
 		return shoppingProductRepository.totalShoppingProductByShoppingCart(carId);
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Integer quantityShoppingProductByShoppingCart(Integer carId) {
+		return shoppingProductRepository.quantityShoppingProductByShoppingCart(carId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ShoppingProduct findByShoppingCartAndProduct(Integer carId, String proId) {
+		return shoppingProductRepository.findByShoppingCartAndProduct(carId, proId);
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<ShoppingProduct> findShoppingProductByShoppingCart(Integer carId){
+		return shoppingProductRepository.findShoppingProductByShoppingCart(carId);
+	}
+
+	@Override
+	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public void deleteProductsByShoppingCart(Integer carId) throws Exception{
+		 if (carId == null) {
+	        throw new Exception("El ShoppingCart id es nulo");
+	     }
+		 if(shoppingCartService.findById(carId).isPresent()==false) {
+			 throw new Exception("El ShoppingCart con id:"+carId+" No existe");
+		 }
+		 
+		 ShoppingCart shoppingCart=shoppingCartService.findById(carId).get();
+		 
+		 if(shoppingCart.getPaymentMethod()!=null) {
+			 throw new Exception("El ShoppingCart con id:"+carId+" ya se encuentra pagado no se pueden eliminar");
+		 }
+		 
+		 shoppingProductRepository.deleteProductsByShoppingCart(carId);		
 	}
 }
