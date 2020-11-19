@@ -2,6 +2,7 @@ package co.edu.usbcali.demo.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +19,7 @@ class CartServiceTest {
 	CartService cartService;
 
 	@Test
+	@Disabled
 	void debeCrearUnShoppingCart()throws Exception {
 		//Arrange
 		String email="abaglowbn@furl.net";
